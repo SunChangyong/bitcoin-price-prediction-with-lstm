@@ -13,7 +13,6 @@ from pandas.plotting import register_matplotlib_converters
 import read_data as etl
 import plot_data
 
-hist = pd.read_csv('./data/dataset.csv')
 # print(hist.tail(5))
 
 sns.set_palette('Set2')
@@ -44,7 +43,7 @@ test_size = 0.1
 zero_base = True
 
 # model params
-lstm_neurons = 20
+lstm_neurons = 20.
 epochs = 50
 batch_size = 4
 loss = 'mae'
@@ -71,4 +70,44 @@ preds = model.predict(X_test).squeeze()
 
 preds = test[target_col].values[:-window_len] * (preds + 1)
 preds = pd.Series(index=targets.index, data=preds)
-print (preds)
+print (preds.tail(1))
+
+
+plot_data.line_plot(targets, preds, 'actual', 'prediction', lw=3)
+plt.show()
+
+n_points = 30
+plot_data.line_plot(targets[-n_points:], preds[-n_points:], 'actual', 'prediction', lw=3)
+plt.show()
+
+plot_data.line_plot(targets[-n_points:][:-1], preds[-n_points:].shift(-1), 'actual', 'prediction', lw=3)
+plt.show()
+
+# Compare returns
+actual_returns = targets.pct_change()[1:]
+predicted_returns = preds.pct_change()[1:]
+
+plot_data.dual_line_plot(actual_returns[-n_points:],
+               predicted_returns[-n_points:],
+               actual_returns[-n_points:][:-1],
+               predicted_returns[-n_points:].shift(-1),
+               'actual returns', 'predicted returns', lw=3)
+
+plot_data.line_plot(actual_returns[-n_points:][:-1], predicted_returns[-n_points:].shift(-1),
+          'actual returns', 'predicted returns', lw=3)
+plt.show()
+
+fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(18, 9))
+
+# actual correlation
+corr = np.corrcoef(actual_returns, predicted_returns)[0][1]
+ax1.scatter(actual_returns, predicted_returns, color='k', marker='o', alpha=0.5, s=100)
+ax1.set_title('r = {:.2f}'.format(corr), fontsize=18)
+
+# shifted correlation
+shifted_actual = actual_returns[:-1]
+shifted_predicted = predicted_returns.shift(-1).dropna()
+corr = np.corrcoef(shifted_actual, shifted_predicted)[0][1]
+ax2.scatter(shifted_actual, shifted_predicted, color='k', marker='o', alpha=0.5, s=100)
+ax2.set_title('r = {:.2f}'.format(corr), fontsize=18);
+plt.show()

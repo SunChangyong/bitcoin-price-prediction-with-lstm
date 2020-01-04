@@ -13,18 +13,16 @@ from pandas.plotting import register_matplotlib_converters
 
 sns.set_palette('Set2')
 register_matplotlib_converters()
-'''
+
 endpoint = 'https://min-api.cryptocompare.com/data/histoday'
 res = requests.get(endpoint + '?fsym=BTC&tsym=USD&limit=2000')
 hist = pd.DataFrame(json.loads(res.content)['Data'])
 hist = hist.set_index('time')
 hist.index = pd.to_datetime(hist.index, unit='s')
 print(hist.tail(5))
-hist.to_csv('./data/dataset.csv', index=False)
-'''
-hist = pd.read_csv('./data/dataset.csv')
+# hist.to_csv('./data/dataset.csv', index=False)
+# hist = pd.read_csv('./data/dataset.csv')
 
-print(hist.tail(5))
 # print hist
 
 target_col = 'close'
@@ -133,7 +131,7 @@ train, test, X_train, X_test, y_train, y_test = prepare_data(
     hist, target_col, window_len=window_len, zero_base=zero_base, test_size=test_size)
 # print(X_test)
 # print(y_test)
-'''
+
 model = build_lstm_model(
     X_train, output_size=1, neurons=lstm_neurons, dropout=dropout, loss=loss,
     optimizer=optimizer)
@@ -142,8 +140,7 @@ history = model.fit(
 
 model.save('./model/model.h5')
 
-'''
-model = load_model('./model/model.h5')
+# model = load_model('./model/model.h5')
 # Plot predictions
 targets = test[target_col][window_len:]
 preds = model.predict(X_test).squeeze()
@@ -154,7 +151,7 @@ preds = model.predict(X_test).squeeze()
 preds = test[target_col].values[:-window_len] * (preds + 1)
 preds = pd.Series(index=targets.index, data=preds)
 print (preds)
-'''
+
 line_plot(targets, preds, 'actual', 'prediction', lw=3)
 plt.show()
 
@@ -207,7 +204,7 @@ corr = np.corrcoef(shifted_actual, shifted_predicted)[0][1]
 ax2.scatter(shifted_actual, shifted_predicted, color='k', marker='o', alpha=0.5, s=100)
 ax2.set_title('r = {:.2f}'.format(corr), fontsize=18);
 plt.show()
-'''
+
 
 
 
